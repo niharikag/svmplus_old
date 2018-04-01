@@ -19,10 +19,11 @@ import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin
 from numpy import linalg as LA
 from sklearn import svm
+from sklearn.utils import column_or_1d, check_X_y
+from base  import BaseSVMPlus
 
 
-
-class libSVMPlus(six.with_metaclass(ABCMeta, BaseEstimator)):
+class LibSVMPlus(six.with_metaclass(ABCMeta, BaseSVMPlus, BaseEstimator)):
     """Base class for SVM plus classification
     """
 
@@ -33,26 +34,17 @@ class libSVMPlus(six.with_metaclass(ABCMeta, BaseEstimator)):
                  kernel_xstar = 'rbf', degree_xstar = 3, gamma_xstar ='auto',
                  tol = 1e-5):
 
+        super(LibSVMPlus, self).__init__(C=1, gamma=1,
+                                      kernel_x='rbf', degree_x=3, gamma_x='auto',
+                                      kernel_xstar='rbf', degree_xstar=3, gamma_xstar='auto',
+                                      tol=1e-5)
 
-        if gamma == 0 or gamma_x == 0 or gamma_xstar == 0:
-            msg = ("The gamma value of 0.0 is invalid. Use 'auto' to set"
-                   " gamma to a value of 1 / n_features.")
-            raise ValueError(msg)
-
-        self.C = C
-        self.gamma = gamma
-        self.kernel_x = kernel_x
-        self.degree_x = degree_x
-        self.gamma_x = gamma_x
-        self.kernel_xstar = kernel_xstar
-        self.degree_xstar = degree_xstar
-        self.gamma_xstar = gamma_xstar
-        self.tol = tol
 
     def fit(self, X, XStar, y):
         """Fit the SVM model according to the given training data.
         """
-        #X, y = check_X_y(X, y, 'csr')
+        X, y = check_X_y(X, y, 'csr')
+        XStar, y = check_X_y(XStar, y, 'csr')
         n_samples, n_features = X.shape
 
 
@@ -111,28 +103,12 @@ class libSVMPlus(six.with_metaclass(ABCMeta, BaseEstimator)):
         self.support_vectors_ = sv_x  # support vector's features
         self.support_y_ = sv_y  # support vector's labels
         coeff = model[3]
-        self.dual_coef_ = abs(coeff)
+        self.dual_coef_ = abs(coeff)[0]
 
 
 
     def project(self, X):
-        if self.kernel_x == "linear":
-            kernel_method = self._linear_kernel
-            kernel_param = None
-        elif self.kernel_x == "poly":
-            kernel_method = self._poly_kernel
-            kernel_param = self.degree_x
-        else:
-            kernel_method = self._rbf_kernel
-            kernel_param = self.gamma_x
-
-        y_predict = np.zeros(len(X))
-        for i in range(len(X)):
-            s = 0
-            for a, sv_y, sv in zip(self.dual_coef_[0], self.support_y_, self.support_vectors_):
-                s += a * sv_y * (kernel_method(X[i], sv, kernel_param) + 1)
-            y_predict[i] = s
-        return y_predict
+        return super(LibSVMPlus, self).project(X)
 
 
     def predict(self, X):
@@ -143,19 +119,3 @@ class libSVMPlus(six.with_metaclass(ABCMeta, BaseEstimator)):
         return self.project(X)
 
 
-    @staticmethod
-    # Linear kernel
-    def _linear_kernel(x1, x2, param = None):
-        return np.dot(x1, x2)
-
-
-    @staticmethod
-    # Polynomial kernel
-    def _poly_kernel(x1, x2, param = 2):
-        return (1 + np.dot(x1, x2)) ** param
-
-
-    @staticmethod
-    # Radial basis kernel
-    def _rbf_kernel(x1, x2, param = 1.0):
-        return np.exp(-(LA.norm(x1 - x2) ** 2) * param)

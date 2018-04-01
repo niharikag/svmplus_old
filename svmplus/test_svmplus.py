@@ -81,8 +81,14 @@ def testRbfSVMPlus():
 def testLibSVM():
     X_train, X_test, y_train, y_test, XStar = prepareDigitData()
 
-    svmp =libsvm.libSVMPlus(C=10, gamma=.00001, kernel_x="linear",
+    svmp = libsvm.LibSVMPlus(C=10, gamma=.00001, kernel_x="poly", kernel_xstar="poly")
+    '''
+    svmp = libsvm.LibSVMPlus(C=10, gamma=.00001, kernel_x="rbf",
+                             gamma_x=.00001, kernel_xstar="rbf", gamma_xstar=.0001)
+    
+    svmp =libsvm.LibSVMPlus(C=10, gamma=.00001, kernel_x="linear",
                             gamma_x = .00001, kernel_xstar="linear", gamma_xstar = .0001)
+    '''
     svmp.fit(X_train, XStar, y_train)
     y_predict = svmp.predict(X_test)
     correct = np.sum(y_predict == y_test)
