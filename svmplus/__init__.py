@@ -9,4 +9,4 @@ The :mod:`svmplus` module includes SVM plus algorithms.
 #         Ola Spjuth<ola.spjuth@farmbio.uu.se>
 # License:
 
-__all__ = ['SVMPlus']
+__all__ = ['SVMPlus', 'gridSearchCV']
