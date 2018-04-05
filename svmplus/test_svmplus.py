@@ -30,6 +30,7 @@ def prepareDigitData():
     XStar = XStar[indices_train]
     return X_train, X_test, y_train, y_test, XStar
 
+
 def testLinearSVMPlus():
     X_train, X_test, y_train, y_test, XStar = prepareDigitData()
 
@@ -53,6 +54,7 @@ def testPolynomialSVMPlus():
     print("Prediction accuracy of SVM")
     print("%d out of %d predictions correct" % (correct, len(y_predict)))
 
+
 def testGridSerachCV():
     param_grid = {'C': [10, 100],
                   'gamma': [0.0001, 0.001],
@@ -61,8 +63,10 @@ def testGridSerachCV():
 
     X_train, X_test, y_train, y_test, XStar = prepareDigitData()
 
-    gridSearchCV.gridSearchSVMPlus(X_train, y_train, XStar,
+    c, gamma, gamma_x, gamma_x_star = gridSearchCV.gridSearchSVMPlus(X_train, y_train, XStar,
                                    param_grid, n_splits=5, logfile=None)
+    print(c, gamma, gamma_x, gamma_x_star)
+
 
 
 def testRbfSVMPlus():
@@ -95,11 +99,23 @@ def testLibSVM():
     print("Prediction accuracy of SVM")
     print("%d out of %d predictions correct" % (correct, len(y_predict)))
 
+
+
+def testSVMPlus():
+    X_train, X_test, y_train, y_test, XStar = 2*np.eye(3), np.eye(3), [1,1,-1], [1,1,-1], 2*np.eye(3)
+
+
+    # train and predict using SVM plus
+    svmp = SVMPlus(C=1, gamma=1, kernel_x= "linear",
+                   kernel_xstar="linear")
+    svmp.fit(X_train, XStar, y_train)
+
 if __name__ == "__main__":
+    testSVMPlus()
     #testLinearSVMPlus()
     #testPolynomialSVMPlus()
     #testRbfSVMPlus()
 
-    testLibSVM()
+    #testLibSVM()
 
-    # testGridSerachCV()
+    #testGridSerachCV()

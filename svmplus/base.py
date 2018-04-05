@@ -34,7 +34,7 @@ class BaseSVMPlus(six.with_metaclass(ABCMeta, BaseEstimator)):
                  tol):
 
 
-        if gamma == 0 or gamma_x == 0 or gamma_xstar == 0:
+        if gamma == 0:
             msg = ("The gamma value of 0.0 is invalid. Use 'auto' to set"
                    " gamma to a value of 1 / n_features.")
             raise ValueError(msg)
@@ -91,8 +91,10 @@ class BaseSVMPlus(six.with_metaclass(ABCMeta, BaseEstimator)):
 
         P1 = np.concatenate((matrix(np.outer(y, y) * K) + KStar / float(self.gamma),
                              KStar / float(self.gamma)), axis=1)
+
         P2 = np.concatenate((KStar / float(self.gamma), KStar / float(self.gamma)), axis=1)
         P = np.concatenate((P1, P2), axis=0)
+        print(P)
         A = np.concatenate((np.ones((1, 2 * n_samples)),
                             np.concatenate((np.transpose(matrix(y)), np.zeros((1, n_samples))), axis=1)),
                            axis=0)
@@ -105,9 +107,11 @@ class BaseSVMPlus(six.with_metaclass(ABCMeta, BaseEstimator)):
             np.concatenate((np.ones((1, n_samples)), np.zeros((1, n_samples))), axis=1)
         q = np.transpose(Q)
 
+        print(q)
+
         sol = solvers.qp(matrix(P, tc='d'), matrix(q, tc='d'), matrix(G, tc='d'), matrix(h, tc='d'),
                          matrix(A, tc='d'), matrix(b, tc='d'))
-
+        print(sol['x'])
         # Lagrange multipliers
         alpha = np.ravel(sol['x'][0:n_samples])
         beta = np.ravel(sol['x'][n_samples:2 * n_samples])

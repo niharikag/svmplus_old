@@ -34,10 +34,10 @@ class LibSVMPlus(six.with_metaclass(ABCMeta, BaseSVMPlus, BaseEstimator)):
                  kernel_xstar = 'rbf', degree_xstar = 3, gamma_xstar ='auto',
                  tol = 1e-5):
 
-        super(LibSVMPlus, self).__init__(C=1, gamma=1,
-                                      kernel_x='rbf', degree_x=3, gamma_x='auto',
-                                      kernel_xstar='rbf', degree_xstar=3, gamma_xstar='auto',
-                                      tol=1e-5)
+        super(LibSVMPlus, self).__init__(C, gamma,
+                                      kernel_x, degree_x, gamma_x,
+                                      kernel_xstar, degree_xstar, gamma_xstar,
+                                      tol)
 
 
     def fit(self, X, XStar, y):

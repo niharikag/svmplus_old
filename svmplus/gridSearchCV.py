@@ -1,8 +1,9 @@
 import numpy as np
-import svmplus
+#import svmplus
 from sklearn.model_selection import StratifiedKFold
 import os
 import multiprocessing
+import libsvmplus as libsvm
 
 # global variable
 gX_train = None
@@ -18,7 +19,7 @@ def fitSVMPlus(k):
     cv_y_train = gy_train[fold[0]]
     cv_y_test = gy_train[fold[1]]
     # compute prediction accuracy using SVM+ on svmFile, and svmPlusFile2 as a priv-info
-    svmp = svmplus.SVMPlus(gParam[0], gParam[1], gParam[2], gParam[3])
+    svmp = libsvm.LibSVMPlus(gParam[0], gParam[1], gParam[2], gParam[3])
     svmp.fit(cv_X_train, XStar=gXStar_train[fold[0]], y = cv_y_train)
     y_predict = svmp.predict(cv_X_test)
     correct = np.sum(y_predict == cv_y_test)
@@ -85,4 +86,4 @@ def gridSearchSVMPlus(X_train, y_train, XStar_train,
     best_gamma_x = gamma_x[index[selectedIndex][2]]
     best_gamma_xstar = gamma_xstar[index[selectedIndex][3]]
 
-    return C, gamma, gamma_x, best_gamma_xstar
+    return best_C, best_gamma, best_gamma_x, best_gamma_xstar

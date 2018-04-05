@@ -1,5 +1,8 @@
 setup.py
 svmplus/__init__.py
+svmplus/base.py
+svmplus/gridSearchCV.py
+svmplus/libsvmplus.py
 svmplus/svmplus.py
 svmplus/test_svmplus.py
 svmplus.egg-info/PKG-INFO
