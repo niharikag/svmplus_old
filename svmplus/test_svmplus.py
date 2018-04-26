@@ -35,7 +35,7 @@ def testLinearSVMPlus():
     X_train, X_test, y_train, y_test, XStar = prepareDigitData()
 
     svmp = SVMPlus(C=1000, gamma = .00001, kernel_x="linear",
-                   kernel_xstar="linear")
+                   kernel_xstar="linear", tol = 1e-10)
     svmp.fit(X_train, XStar, y_train)
     y_predict = svmp.predict(X_test)
     correct = np.sum(y_predict == y_test)
@@ -47,7 +47,7 @@ def testPolynomialSVMPlus():
     X_train, X_test, y_train, y_test, XStar = prepareDigitData()
 
     svmp = SVMPlus(C=10, gamma = .01, kernel_x="poly",
-                   kernel_xstar="poly")
+                   kernel_xstar="poly", tol = 1e-10)
     svmp.fit(X_train, XStar, y_train)
     y_predict = svmp.predict(X_test)
     correct = np.sum(y_predict == y_test)
@@ -73,8 +73,8 @@ def testRbfSVMPlus():
     X_train, X_test, y_train, y_test, XStar = prepareDigitData()
 
     # train and predict using SVM plus
-    svmp = SVMPlus(C=1000, gamma=.0001, kernel_x="rbf", gamma_x = .00001,
-                   kernel_xstar="rbf", gamma_xstar = .00001)
+    svmp = SVMPlus(C=10, gamma=.01, kernel_x="rbf", gamma_x = .0000001,
+                   kernel_xstar="rbf", gamma_xstar = .00001, tol = 1e-10)
     svmp.fit(X_train, XStar, y_train)
     y_predict = svmp.predict(X_test)
     correct = np.sum(y_predict == y_test)
@@ -102,20 +102,66 @@ def testLibSVM():
 
 
 def testSVMPlus():
-    X_train, X_test, y_train, y_test, XStar = 2*np.eye(3), np.eye(3), [1,1,-1], [1,1,-1], 2*np.eye(3)
+    #X_train, X_test, y_train, y_test, XStar = 2*np.eye(3), 3*np.eye(3), [1,1,-1], [1,1,-1], 2*np.eye(3)
+    #X1 = np.array([[3, 1], [3, -1], [6, 1], [6, -1]])
+    #X2 = np.array([[1, 0], [0, 1], [0, -1], [-1, 0]])
+    #X_train = XStar = np.concatenate((X1, X2))
+    #y_train = [1, 1, 1, 1, -1, -1, -1, -1]
 
 
+    X_train = np.array([[17, 24,  1,  8, 15],
+                       [23,  5,  7, 14, 16],
+                       [4,  6, 13, 20, 22],
+                       [10, 12, 19, 21,  3],
+                       [11, 18, 25,  2,  9]])
+
+    y_train = [1, 1, -1, 1, -1]
+
+    XStar = np.eye(5)
+    XStar[0,0] = 1
+    XStar[1, 1] = 2
+    XStar[2, 2] = 3
+    XStar[3, 3] = 4
+    XStar[4, 4] = 5
     # train and predict using SVM plus
-    svmp = SVMPlus(C=1, gamma=1, kernel_x= "linear",
-                   kernel_xstar="linear")
+    #svmp = SVMPlus(C=1, gamma=1, kernel_x= "rbf", gamma_x = .0019,
+    #               kernel_xstar="rbf", gamma_xstar = 0.0568)
+    #svmp.fit(X_train, XStar, y_train)
+
+    svmp = SVMPlus(C=1, gamma=1, kernel_x= "linear", degree_x = 2,  gamma_x = .0019,
+                   kernel_xstar="linear", degree_xstar = 2, gamma_xstar = 0.0568)
     svmp.fit(X_train, XStar, y_train)
+    #y_predict = svmp.predict(X_test)
+    #print(y_predict)
+
+
+def test3Class():
+    X1 = np.array([[3,1], [3,-1], [5,1], [5,-1]])
+    X2 = np.array([[1,0], [0,1], [0,-1], [-1,0]])
+    X3 = np.array([[1,10], [3,11]])
+
+    X_train = np.concatenate((X1,X2))
+    X_train = np.concatenate((X_train, X3))
+
+    y_train = np.array([1,1,1,1,2,2,2,2,3,3]).reshape(10, 1)
+    XStar = np.eye(10)
+    X_test = np.array([[3,0], [5,0], [4,0], [4,1],
+                 [0, 0], [-1,-2], [1,2], [1,-2]])
+    y_test = np.array([1,1,1,1, 2, 2, 2, 2]).reshape(8, 1)
+
+    svmp = SVMPlus(C=1, gamma=1, kernel_x="linear", degree_x=2, gamma_x=.0019,
+                   kernel_xstar="linear", degree_xstar=2, gamma_xstar=0.0568)
+    svmp.fit(X_train, XStar, y_train)
+    y_predict = svmp.predict(X_test)
+    print(y_predict)
+
+
 
 if __name__ == "__main__":
-    testSVMPlus()
+    #testSVMPlus()
     #testLinearSVMPlus()
     #testPolynomialSVMPlus()
     #testRbfSVMPlus()
-
     #testLibSVM()
-
     #testGridSerachCV()
+    test3Class()
