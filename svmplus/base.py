@@ -24,8 +24,6 @@ class BaseSVMPlus(six.with_metaclass(ABCMeta, BaseEstimator)):
     """Base class for SVM plus classification
     """
 
-    #_kernels = ["linear", "poly", "rbf"]
-
     def __init__(self, C, gamma,
                  kernel_x, degree_x, gamma_x,
                  kernel_xstar, degree_xstar, gamma_xstar,

@@ -1,5 +1,5 @@
 import numpy as np
-from svmplus import SVMPlus
+import svmplus
 from sklearn import svm
 from sklearn.datasets import load_digits
 from numpy import linalg as LA
@@ -7,7 +7,7 @@ from sklearn.model_selection import train_test_split
 import scipy.ndimage
 import gridSearchCV
 import libsvmplus as libsvm
-
+import svmplusQP
 
 def prepareDigitData():
     digits = load_digits(n_class=2)
@@ -25,7 +25,7 @@ def prepareDigitData():
     X = resizedImage
 
     X_train, X_test, y_train, y_test, indices_train, indices_valid = \
-        train_test_split(X, y, range(len(X)), test_size=0.3)
+        train_test_split(X, y, range(len(X)), test_size=0.3, stratify = y)
 
     XStar = XStar[indices_train]
     return X_train, X_test, y_train, y_test, XStar
@@ -34,9 +34,9 @@ def prepareDigitData():
 def testLinearSVMPlus():
     X_train, X_test, y_train, y_test, XStar = prepareDigitData()
 
-    svmp = SVMPlus(C=1000, gamma = .00001, kernel_x="linear",
+    svmp = svmplus.SVMPlus(svm_type="QP", C=1000, gamma = .00001, kernel_x="linear",
                    kernel_xstar="linear", tol = 1e-10)
-    svmp.fit(X_train, XStar, y_train)
+    svmp.fit(X_train, XStar, np.array(y_train).reshape(len(X_train),1))
     y_predict = svmp.predict(X_test)
     correct = np.sum(y_predict == y_test)
     print("Prediction accuracy of SVM")
@@ -46,9 +46,9 @@ def testLinearSVMPlus():
 def testPolynomialSVMPlus():
     X_train, X_test, y_train, y_test, XStar = prepareDigitData()
 
-    svmp = SVMPlus(C=10, gamma = .01, kernel_x="poly",
+    svmp = svmplus.SVMPlus(svm_type="QP", C=10, gamma = .01, kernel_x="poly",
                    kernel_xstar="poly", tol = 1e-10)
-    svmp.fit(X_train, XStar, y_train)
+    svmp.fit(X_train, XStar, np.array(y_train).reshape(len(X_train),1))
     y_predict = svmp.predict(X_test)
     correct = np.sum(y_predict == y_test)
     print("Prediction accuracy of SVM")
@@ -73,31 +73,14 @@ def testRbfSVMPlus():
     X_train, X_test, y_train, y_test, XStar = prepareDigitData()
 
     # train and predict using SVM plus
-    svmp = SVMPlus(C=10, gamma=.01, kernel_x="rbf", gamma_x = .0000001,
+    svmp = svmplus.SVMPlus(svm_type="QP", C=1000, gamma=.01, kernel_x="rbf", gamma_x = .0000001,
                    kernel_xstar="rbf", gamma_xstar = .00001, tol = 1e-10)
-    svmp.fit(X_train, XStar, y_train)
+    svmp.fit(X_train, XStar, np.array(y_train).reshape(len(X_train),1))
     y_predict = svmp.predict(X_test)
     correct = np.sum(y_predict == y_test)
     print("Prediction accuracy of SVM")
     print("%d out of %d predictions correct" % (correct, len(y_predict)))
 
-
-def testLibSVM():
-    X_train, X_test, y_train, y_test, XStar = prepareDigitData()
-
-    svmp = libsvm.LibSVMPlus(C=10, gamma=.00001, kernel_x="poly", kernel_xstar="poly")
-    '''
-    svmp = libsvm.LibSVMPlus(C=10, gamma=.00001, kernel_x="rbf",
-                             gamma_x=.00001, kernel_xstar="rbf", gamma_xstar=.0001)
-    
-    svmp =libsvm.LibSVMPlus(C=10, gamma=.00001, kernel_x="linear",
-                            gamma_x = .00001, kernel_xstar="linear", gamma_xstar = .0001)
-    '''
-    svmp.fit(X_train, XStar, y_train)
-    y_predict = svmp.predict(X_test)
-    correct = np.sum(y_predict == y_test)
-    print("Prediction accuracy of SVM")
-    print("%d out of %d predictions correct" % (correct, len(y_predict)))
 
 
 
@@ -128,9 +111,9 @@ def testSVMPlus():
     #               kernel_xstar="rbf", gamma_xstar = 0.0568)
     #svmp.fit(X_train, XStar, y_train)
 
-    svmp = SVMPlus(C=1, gamma=1, kernel_x= "linear", degree_x = 2,  gamma_x = .0019,
+    svmp = svmplus.SVMPlus(svm_type="QP", C=1, gamma=1, kernel_x= "linear", degree_x = 2,  gamma_x = .0019,
                    kernel_xstar="linear", degree_xstar = 2, gamma_xstar = 0.0568)
-    svmp.fit(X_train, XStar, y_train)
+    svmp.fit(X_train, XStar, np.array(y_train).reshape(len(X_train),1))
     #y_predict = svmp.predict(X_test)
     #print(y_predict)
 
@@ -149,9 +132,12 @@ def test3Class():
                  [0, 0], [-1,-2], [1,2], [1,-2]])
     y_test = np.array([1,1,1,1, 2, 2, 2, 2]).reshape(8, 1)
 
-    svmp = SVMPlus(C=1, gamma=1, kernel_x="linear", degree_x=2, gamma_x=.0019,
-                   kernel_xstar="linear", degree_xstar=2, gamma_xstar=0.0568)
-    svmp.fit(X_train, XStar, y_train)
+    svmp = svmplus.SVMPlus(svm_type="QP", C=1000, gamma=.1, kernel_x="rbf", degree_x=2, gamma_x=.00001,
+                   kernel_xstar="rbf", degree_xstar=2, gamma_xstar=0.00001)
+
+    #svmp = libsvm.LibSVMPlus(C=100, gamma=.0001, kernel_x="rbf", degree_x=2, gamma_x=.0001,
+    #               kernel_xstar="rbf", degree_xstar=2, gamma_xstar=0.00001)
+    svmp.fit(X_train, XStar, np.array(y_train).reshape(len(X_train),1))
     y_predict = svmp.predict(X_test)
     print(y_predict)
 
@@ -162,6 +148,5 @@ if __name__ == "__main__":
     #testLinearSVMPlus()
     #testPolynomialSVMPlus()
     #testRbfSVMPlus()
-    #testLibSVM()
     #testGridSerachCV()
     test3Class()
